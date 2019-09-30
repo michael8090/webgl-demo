@@ -7,7 +7,7 @@
     "sourceMap": true,
     "allowJs": true,
     "lib": [
-      "es6",
+      "esnext",
       "dom"
     ],
     "rootDir": "src",

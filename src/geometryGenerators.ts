@@ -1,5 +1,5 @@
 import { Geometry } from "./SceneGraph";
-export function getRectangle(size: number): Geometry {
+export function getBox(size: number): Geometry {
   const indices = new Uint16Array([
     4,
     5,

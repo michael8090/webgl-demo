@@ -1,4 +1,4 @@
-import { mat4, glMatrix } from "gl-matrix";
+import { mat4 } from "gl-matrix";
 
 export interface Geometry {
   vertexes: Float32Array;
@@ -31,8 +31,8 @@ export interface SceneNode {
     indices: Uint16Array;
   };
   program: WebGLProgram;
-  attributes?: GlAttribute[];
-  uniforms?: GlUniform[];
+  attributes?: { [key: string]: GlAttribute | undefined };
+  uniforms?: { [key: string]: GlUniform | undefined };
 }
 
 export class SceneGraph {
@@ -42,8 +42,12 @@ export class SceneGraph {
     const { gl } = this;
     const { program, attributes, uniforms, geometry } = node;
     if (attributes) {
-      attributes.forEach(attribute => {
+      Object.values(attributes).forEach(attribute => {
+        attribute = attribute as GlAttribute;
         const attribLoc = gl.getAttribLocation(program, attribute.name);
+        if (attribLoc === -1) {
+          throw new Error(`could not find attribute: ${attribute.name}`);
+        }
         attribute.location = attribLoc;
         const buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -54,7 +58,8 @@ export class SceneGraph {
     }
 
     if (uniforms) {
-      uniforms.forEach(uniform => {
+      Object.values(uniforms).forEach(uniform => {
+        uniform = uniform as GlUniform;
         const uniformLoc = gl.getUniformLocation(program, uniform.name);
         if (!uniformLoc) {
           throw new Error(`could not find uniform: ${uniform.name}`);
@@ -71,13 +76,23 @@ export class SceneGraph {
   }
   draw() {
     const { gl } = this;
-    this.nodes.forEach(node => {
+    this.nodes.forEach((node, i) => {
       gl.useProgram(node.program);
       if (node.uniforms) {
-        node.uniforms.forEach(uniform => {
+        Object.values(node.uniforms).forEach(uniform => {
+          uniform = uniform as GlUniform;
           if (uniform.type === "Matrix4fv") {
-            gl.uniformMatrix4fv(uniform.location!, false, uniform.value);
-          } else if (uniform.type === "1f") {
+            if (
+              uniform.name === "u_project_mat" ||
+              uniform.name === "u_view_mat"
+            ) {
+              if (i === 0) {
+                gl.uniformMatrix4fv(uniform.location!, false, uniform.value);
+              }
+            } else {
+              gl.uniformMatrix4fv(uniform.location!, false, uniform.value);
+            }
+          } else if (uniform.type === "1f" && i === 0) {
             gl.uniform1f(uniform.location!, uniform.value);
           }
         });
