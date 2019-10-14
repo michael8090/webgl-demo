@@ -3,9 +3,9 @@ import { vec3, mat4, vec2 } from "gl-matrix";
 export function initControls(
   canvas: HTMLCanvasElement,
   spaceSize: number,
-  viewMatrix: mat4
+  viewMatrix: mat4,
+  eyePosition: vec3
 ) {
-  const eyePosition = vec3.create();
   const center = vec3.create();
   const up = [0, 1, 0];
   vec3.set(center, 0, 0, 0);

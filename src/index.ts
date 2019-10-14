@@ -1,4 +1,4 @@
-import { mat4 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 import vertexShaderString from "./vertexShader.glsl";
 import fragmentShaderString from "./fragmentShader.glsl";
 import { loadProgram } from "./loadProgram";
@@ -7,8 +7,8 @@ import { initControls } from "./controls";
 import { SceneGraph, SceneNode } from "./SceneGraph";
 
 const canvas = document.createElement("canvas");
-const width = 300;
-const height = 300;
+const width = window.innerWidth;
+const height = width;
 canvas.style.cssText = `width: ${width}px; height: ${height}px; background: black;`;
 canvas.width = width;
 canvas.height = height;
@@ -24,9 +24,10 @@ const projectionMatrix = mat4.create();
 const sceneGraph = new SceneGraph(gl);
 
 const program = loadProgram(gl, vertexShaderString, fragmentShaderString);
+const eyePosition = vec3.create();
 
-function createBox(x: number, y: number, z: number) {
-  const boxGeometry = getBox(width);
+function createBox(x: number, y: number, z: number, size: number) {
+  const boxGeometry = getBox(size);
   const transform = mat4.create();
   const node: SceneNode = {
     geometry: boxGeometry,
@@ -36,6 +37,11 @@ function createBox(x: number, y: number, z: number) {
         type: "3fv",
         name: "a_position",
         value: boxGeometry.vertexes
+      },
+      normals: {
+        type: "3fv",
+        name: "a_normal",
+        value: boxGeometry.normals
       }
     },
     uniforms: {
@@ -62,7 +68,12 @@ function createBox(x: number, y: number, z: number) {
       size: {
         type: "1f",
         name: "u_size",
-        value: width
+        value: size
+      },
+      eyePosition: {
+        type: "3fv",
+        name: "u_eye_pos",
+        value: eyePosition
       }
     }
   };
@@ -70,13 +81,16 @@ function createBox(x: number, y: number, z: number) {
   return node;
 }
 
+const count = 50;
+
 function getRandomValue() {
-  return (Math.random() - 0.5) * 5 * width;
+  return (Math.random() - 0.5) * Math.pow(count * 10, 0.33) * width;
 }
 
-for (let i = 0, n = 25; i < n; i++) {
+for (let i = 0, n = count; i < n; i++) {
   sceneGraph.add(
-    createBox(getRandomValue(), getRandomValue(), getRandomValue())
+    createBox(getRandomValue(), getRandomValue(), getRandomValue(), width)
+    // createBox(-0.5 * width, -0.5 * width, -0.5 * width, width)
   );
 }
 
@@ -88,7 +102,7 @@ mat4.perspective(
   20 * width
 );
 
-initControls(canvas, width, viewMatrix);
+initControls(canvas, width, viewMatrix, eyePosition);
 
 const t0 = Date.now();
 
@@ -107,7 +121,7 @@ function draw() {
     if (node.uniforms) {
       const timeUniform = node.uniforms.time;
       if (timeUniform) {
-        timeUniform.value = now / 300;
+        timeUniform.value = now / 1000;
         // the following line doesn't work... maybe it's about the float number range?
         // const now = (Date.now() - t0 + 10000000000) / 300;
       }
