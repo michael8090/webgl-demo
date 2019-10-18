@@ -8,14 +8,16 @@ export function initControls(
 ) {
   const center = vec3.create();
   const up = [0, 1, 0];
-  vec3.set(center, 0, 0, 0);
-  let alpha = Math.PI * 0.25;
+  const initCenter = [0, 0, 0];
+  vec3.set(center, initCenter[0], initCenter[1], initCenter[2]);
+  const initAlpha = Math.PI * 0.25;
+  let alpha = initAlpha;
   let beta = alpha;
   let r = 1.7 * spaceSize;
   function updateEyePosition() {
     const maxRotate = Math.PI * 0.5 - 0.00001;
-    const maxR = 10 * spaceSize;
-    const minR = 0.5 * spaceSize;
+    const maxR = 50 * spaceSize;
+    const minR = 0.1 * spaceSize;
     if (r < minR) {
       r = minR;
     }
@@ -90,14 +92,24 @@ export function initControls(
     canvas.oncontextmenu = e => e.preventDefault();
     canvas.onwheel = e => {
       e.preventDefault();
-      const zoomSpeed = 0.1 * spaceSize;
+      const zoomSpeed = 1.05;
       if (e.deltaY > 0) {
-        r += zoomSpeed;
+        r *= zoomSpeed;
       } else {
-        r -= zoomSpeed;
+        r /= zoomSpeed;
       }
       updateEyePosition();
       mat4.lookAt(viewMatrix, eyePosition, center, up);
+    };
+
+    // blankspace to reset
+    document.onkeyup = e => {
+      if (e.key === " ") {
+        alpha = beta = initAlpha;
+        vec3.set(center, initCenter[0], initCenter[1], initCenter[2]);
+        updateEyePosition();
+        mat4.lookAt(viewMatrix, eyePosition, center, up);
+      }
     };
   }
 }

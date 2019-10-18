@@ -6,6 +6,17 @@ export interface Geometry {
   indices: Uint16Array;
 }
 
+export class Material {
+  constructor(
+    public ambient: vec3,
+    public diffuse: vec3,
+    public specular: vec3,
+    public shiness: number
+  ) {
+    //
+  }
+}
+
 export interface GlAttribute {
   name: string;
   type: "3fv";
@@ -66,22 +77,6 @@ export class SceneGraph {
         // gl.vertexAttribPointer(attribLoc, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(attribLoc);
       });
-
-      // [attributes.normals, attributes.vertexePosition].forEach(attribute => {
-      //   attribute = attribute as GlAttribute;
-      //   const attribLoc = gl.getAttribLocation(program, attribute.name);
-      //   if (attribLoc === -1) {
-      //     throw new Error(`could not find attribute: ${attribute.name}`);
-      //   }
-      //   attribute.location = attribLoc;
-      //   const buffer = gl.createBuffer();
-      //   attribute.buffer = buffer!;
-      //   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      //   gl.bufferData(gl.ARRAY_BUFFER, attribute.value, gl.STATIC_DRAW);
-
-      //   // gl.vertexAttribPointer(attribLoc, 3, gl.FLOAT, false, 0, 0);
-      //   gl.enableVertexAttribArray(attribute.location!);
-      // });
     }
 
     if (uniforms) {
